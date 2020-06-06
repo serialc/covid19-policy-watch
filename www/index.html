@@ -17,6 +17,9 @@
       h1, h2 {
         margin-top: 2rem;
       }
+      h3 {
+        font-weight: bold;
+      }
       svg {
         border: solid 1px black;
       }
@@ -49,10 +52,12 @@
         opacity: 1;
       }
       svg rect.policy_bar {
-        opacity: 0.4;
+        opacity: 0.6;
       }
       svg rect.policy_bar:hover, svg rect.infbar:hover, svg rect.dthbar:hover {
         opacity: 1;
+      }
+      svg rect.policy_bar:hover {
         cursor: pointer;
       }
     </style>
@@ -69,7 +74,7 @@
 <!-- Begin page content -->
 <main role="main" class="flex-shrink-0">
   <div class="container">
-    <div class="row"> <div id="main" class="col"><h1>EU Countries</h1><!-- content generated --></div> </div>
+    <div class="row"><div id="main" class="col"><h1>EU Countries</h1><!-- content generated --></div> </div>
     <div class="row">
       <div class="col">
         <h1>Methodology</h1>

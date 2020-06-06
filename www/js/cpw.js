@@ -3,7 +3,7 @@
 var CPW = {
   "data": {},
   "constants": {
-    "policy_colours": ["#e72f52", "#7dc462", "#0d95d0", "#774fa0", "#efb743", "#e72f52", "#ffa500", "#666666"],
+    "policy_colours": ["#e72f52", "#7dc462", "#0d95d0", "#774fa0", "#efb743", "#e72f52", "#ffa500", "#777777"],
     "urls": {
       "policies": {
         "live": "https://static.eurofound.europa.eu/covid19db/data/covid19db.json",
@@ -38,15 +38,18 @@ CPW.initialize = function() {
 
     let p = document.createElement("p");
     // add generated SVG
-    p.appendChild(CPW.get_country_svg(countries[i]));
+    p.appendChild(CPW.get_country_svg(i, countries[i]));
     main.appendChild(p);
 
+    // info box
+    p = document.createElement("p");
+    p.setAttribute("id", "ib_" + i);
+    main.appendChild(p);
     //break;
   }
-
 };
 
-CPW.get_country_svg = function(country) {
+CPW.get_country_svg = function(cid, country) {
   let canvas_width = 1000;
   let canvas_height = 200;
   let policy_height = 200;
@@ -65,6 +68,8 @@ CPW.get_country_svg = function(country) {
   let dates = CPW.data.rates.inf[country].date;
   let inf = CPW.data.rates.inf[country].smth7;
   let dth = CPW.data.rates.dth[country].smth7;
+  let abinf = CPW.data.rates.inf[country].daily;
+  let abdth = CPW.data.rates.dth[country].daily;
 
   // calc. conversions
   let x_min = new Date(dates[0]);
@@ -97,6 +102,13 @@ CPW.get_country_svg = function(country) {
   dth_text.setAttribute("y", padding - ytmargin + font_size);
   dth_text.appendChild(document.createTextNode("Deaths"));
   svg.appendChild(dth_text);
+
+  let pol_text = document.createElementNS(svgns, 'text');
+  pol_text.setAttribute("class", "dth_scale");
+  pol_text.setAttribute("text-anchor", "middle");
+  pol_text.setAttribute("transform", "translate(" + -padding + "," + (canvas_height + policy_height/2) + "),rotate(-90)");
+  pol_text.appendChild(document.createTextNode("Policy measures"));
+  svg.appendChild(pol_text);
 
   // Add horizontal scale lines
   let inf_lines = 3;
@@ -154,10 +166,15 @@ CPW.get_country_svg = function(country) {
   // make data bars of inf and dth, and x-axis vertical grid/date lines
   for( let i = 0; i < days_of_data; i=i+1 ) {
 
+    let infdth_ttip = document.createElementNS(svgns, 'title');
+    infdth_ttip.appendChild(document.createTextNode("Smoothed: " + inf[i] + " cases, " + dth[i] + " deaths\nReported: " + abinf[i] + " cases, " + abdth[i] + " deaths\nDate: " + dates[i]))
+
     // infections/cases scale 
     if( inf[i] > 0 ) {
+
       let inf_bar = document.createElementNS(svgns, 'rect');
       inf_bar.setAttribute("class", "infbar");
+      inf_bar.appendChild(infdth_ttip.cloneNode(true));
       inf_bar.setAttribute("width", barw - padding);
       inf_bar.setAttribute("height", inf[i]/inf_conv);
       inf_bar.setAttribute("x", padding + (new Date(dates[i]) - x_min) * x_conv);
@@ -166,8 +183,10 @@ CPW.get_country_svg = function(country) {
     }
 
     if( dth[i] > 0 ) {
+
       let dth_bar = document.createElementNS(svgns, 'rect');
       dth_bar.setAttribute("class", "dthbar");
+      dth_bar.appendChild(infdth_ttip);
       dth_bar.setAttribute("width", barw - padding);
       dth_bar.setAttribute("height", dth[i]/dth_conv);
       dth_bar.setAttribute("x", padding + (new Date(dates[i]) - x_min) * x_conv);
@@ -202,7 +221,7 @@ CPW.get_country_svg = function(country) {
   let cpolicies = CPW.data.policies.filter(c => c.fieldData.calc_country === country);
   let pbar_width = (policy_height - padding)/cpolicies.length;
 
-  let pc = CPW.constants.policy_colours;
+  //let pc = CPW.constants.policy_colours;
   let polycount = 0;
   for( let i in cpolicies ) {
     if( cpolicies[i] && typeof cpolicies !== 'function') {
@@ -212,16 +231,27 @@ CPW.get_country_svg = function(country) {
       let estop = Date.parse(cp.fieldData.d_endDate === "" || Date.parse(cp.fieldData.d_endDate) > x_max ? x_max : cp.fieldData.d_endDate );
       estop = estop + 24 * 60 * 60 * 1000; // end of day rather than start
 
-      let categ = cp.fieldData.calc_minorCategory;
-      let catcol = CPW.constants.policy_colours[CPW.policy_types.findIndex((e) => e === categ)];
+      let polmeasure = cp.fieldData;
+      let catcol = CPW.constants.policy_colours[CPW.policy_types.findIndex((e) => e === polmeasure.calc_minorCategory)];
+
+      let poli_ttip = document.createElementNS(svgns, 'title');
+      poli_ttip.appendChild(document.createTextNode(
+        "" + polmeasure.title + 
+        "\nCategory: " + polmeasure.calc_minorCategory + 
+        "\nSubcategory: " + polmeasure.calc_subMinorCategory +
+        "\nType: " + polmeasure.calc_type
+      ));
 
       let rect = document.createElementNS(svgns, 'rect');
       rect.setAttribute("class", "policy_bar");
+      rect.setAttribute("id", cid + "_" + cp.recordId);
+      rect.appendChild(poli_ttip);
       rect.setAttribute("fill", catcol);
       rect.setAttribute("x", padding + (estart - x_min) * x_conv);
       rect.setAttribute("width", (estop - estart) * x_conv);
       rect.setAttribute("y", canvas_height + padding + polycount * pbar_width);
-      rect.setAttribute("height", pbar_width - padding);
+      rect.setAttribute("height", pbar_width - padding/2);
+      rect.addEventListener("click", CPW.populate_info);
       svg.appendChild(rect);
 
       // count the number of policies this country has committed
@@ -230,6 +260,35 @@ CPW.get_country_svg = function(country) {
   }
 
   return(svg);
+};
+
+CPW.populate_info = function() {
+  let [cid, pid] = this.id.split('_');
+  let infobox = document.getElementById('ib_' + cid);
+  let policy = CPW.data.policies.filter(p => p.recordId === pid)[0];
+  console.log(policy.fieldData);
+  let catcol = CPW.constants.policy_colours[CPW.policy_types.findIndex((e) => e === policy.fieldData.calc_minorCategory)];
+
+  // delete contents
+  infobox.innerHTML = 
+    "<h3>" + policy.fieldData.title + "</h3>" +
+    "<p><strong><span style='color: " + catcol + "'>" + policy.fieldData.calc_minorCategory + "</span> - " + policy.fieldData.calc_subMinorCategory + "</strong><br>" +
+    "Type: <strong>" + policy.fieldData.calc_type + "</strong><br>" +
+    "Duration: " + policy.fieldData.d_startDate + " - " + policy.fieldData.d_endDate + " [" + policy.fieldData.dateType + "]<br>" +
+    "<small>Last updated: " + policy.fieldData.calc_lastUpdate + "</small></p>" +
+
+
+    "<p><strong>Context:</strong> " + 
+    policy.fieldData.descriptionBackgroundInfo.trim("\r").replace(/\r\r/gm, '<br>').replace(/\r(\d+\. |\*)/gm, "<br>- ").replace('\r', ' ') +
+    "</p>" +
+    "<p><strong>Measure:</strong> " +
+    policy.fieldData.descriptionContentOfMeasure.trim("\r").replace(/\r\r/g, '<br>').replace(/\r(\d+\. |\*)/g, "<br>- ").replace('\r', ' ') +
+    "</p>" +
+    "<p><strong>Effectiveness:</strong> " + policy.fieldData.descriptionUseOfMeasure + "</p>" +
+    //"<p>" + policy.fieldData.+ ", " + policy.fieldData.+ "</p>" +
+    "<p><a href='" + policy.fieldData.calc_githubURL + "' target='_blank'>More information</a></p><hr>";
+  
+
 };
 
 CPW.get_policy_types = function() {
@@ -249,33 +308,24 @@ CPW.get_countries = function() {
 };
 
 CPW.onload = function() {
-  fetch(CPW.constants.urls.policies.backup)
-    .then(function(response) {
-      //if( false ) { // testing
-      if( response.status === 200 ) {
-        return response.json();
-      } else {
-        // get the local copy
-        return(fetch(CPW.constants.urls.policies.backup)
-          .then(function(response) {
-            return response.json();
-          }));
-      }
-    })
-    .then(function(data) {
-      // order by date and store
-      CPW.data.policies = data.sort(function(a,b) { return(new Date(a.fieldData.d_startDate) - new Date(b.fieldData.d_startDate)); });
-      CPW.initialize();
-    });
 
-  // fetch the cleaned confirmed COVID-19 cases and fatalities
-  fetch(CPW.constants.urls.rates.local)
-    .then(function(response) {
-      return response.json();
-    })
-    .then(function(data) {
-      CPW.data.rates = data;
-    });
+  Promise.all([
+    fetch(CPW.constants.urls.policies.backup).then(response => response.json()),
+    fetch(CPW.constants.urls.rates.local).then(response => response.json())
+  ]).then(([pdata, cdata]) => {
+
+    // save to global object
+    CPW.data.policies = pdata.sort(
+      function(a,b) { 
+        return(new Date(a.fieldData.d_startDate) - new Date(b.fieldData.d_startDate));
+      }
+    );
+    CPW.data.rates = cdata;
+
+
+    // start processing data
+    CPW.initialize();
+  }); 
 };
 
 CPW.onload();
