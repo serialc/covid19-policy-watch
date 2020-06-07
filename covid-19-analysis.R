@@ -38,3 +38,4 @@ eudthcon <- lapply(split(eudth, eudth$Country.Region), function(x) {
 full <- list(inf=euinfcon, dth=eudthcon)
      
 write(toJSON(full), file = 'www/data/covid19_infdth.json')
+

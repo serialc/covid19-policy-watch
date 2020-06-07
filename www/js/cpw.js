@@ -17,28 +17,54 @@ var CPW = {
 };
 
 CPW.initialize = function() {
-  let i,countries;
-  let heading,tnode,main;
 
   // build a list of the countries
   CPW.countries = CPW.get_countries();
   CPW.policy_types = CPW.get_policy_types();
-  countries = CPW.countries;
 
-  main = document.getElementById("main");
+  // generate the links to the countries
+  CPW.create_links();
+
+  // generate the infographics for all EU countries
+  CPW.create_infographics("smth7");
+};
+
+CPW.create_links = function() {
+  let countries = CPW.countries;
+  let clist = document.getElementById("country_list");
+
+  for( let i=0; i < countries.length; i=i+1 ) {
+    // add country link to list
+    let link = document.createElement("a");
+    link.appendChild(document.createTextNode(countries[i]));
+    link.setAttribute("href", "#" + countries[i]);
+    clist.appendChild(link);
+    if( (i+1) !== countries.length ) {
+      clist.appendChild(document.createTextNode(", "));
+    }
+  }
+};
+
+CPW.create_infographics = function(mode) {
+  let countries = CPW.countries;
+  let main = document.getElementById("main");
+  // empty the main element
+  main.innerHTML = '';
+
   // add headings for each country
-  for( i in countries ) {
-    console.log(countries[i]);
+  for( let i=0; i < countries.length; i=i+1 ) {
+    //console.log(countries[i]);
 
     // add heading
-    heading = document.createElement("h2");
-    tnode = document.createTextNode(countries[i]);
+    let heading = document.createElement("h2");
+    let tnode = document.createTextNode(countries[i]);
+    heading.setAttribute("id", countries[i]);
     heading.appendChild(tnode);
     main.appendChild(heading);
 
     let p = document.createElement("p");
     // add generated SVG
-    p.appendChild(CPW.get_country_svg(i, countries[i]));
+    p.appendChild(CPW.get_country_svg(i, countries[i], mode));
     main.appendChild(p);
 
     // info box
@@ -49,7 +75,7 @@ CPW.initialize = function() {
   }
 };
 
-CPW.get_country_svg = function(cid, country) {
+CPW.get_country_svg = function(cid, country, value_mode) {
   let canvas_width = 1000;
   let canvas_height = 200;
   let policy_height = 200;
@@ -66,8 +92,9 @@ CPW.get_country_svg = function(cid, country) {
 
   // get data
   let dates = CPW.data.rates.inf[country].date;
-  let inf = CPW.data.rates.inf[country].smth7;
-  let dth = CPW.data.rates.dth[country].smth7;
+  let inf = CPW.data.rates.inf[country][value_mode];
+  let dth = CPW.data.rates.dth[country][value_mode];
+
   let abinf = CPW.data.rates.inf[country].daily;
   let abdth = CPW.data.rates.dth[country].daily;
 
@@ -266,7 +293,6 @@ CPW.populate_info = function() {
   let [cid, pid] = this.id.split('_');
   let infobox = document.getElementById('ib_' + cid);
   let policy = CPW.data.policies.filter(p => p.recordId === pid)[0];
-  console.log(policy.fieldData);
   let catcol = CPW.constants.policy_colours[CPW.policy_types.findIndex((e) => e === policy.fieldData.calc_minorCategory)];
 
   // delete contents
