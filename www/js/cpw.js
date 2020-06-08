@@ -95,6 +95,8 @@ CPW.get_country_svg = function(cid, country, value_mode) {
   let inf = CPW.data.rates.inf[country][value_mode];
   let dth = CPW.data.rates.dth[country][value_mode];
 
+  let smthinf = CPW.data.rates.inf[country].smth7;
+  let smthdth = CPW.data.rates.dth[country].smth7;
   let abinf = CPW.data.rates.inf[country].daily;
   let abdth = CPW.data.rates.dth[country].daily;
 
@@ -105,8 +107,11 @@ CPW.get_country_svg = function(cid, country, value_mode) {
   let barw = (canvas_width -  padding)/days_of_data;
   let x_conv = (canvas_width - padding - barw) / (x_max - x_min)
 
-  let max_inf = Math.max.apply(null, inf); // similar to below, longhand
-  let max_dth = Math.max(...dth); // similar to above, shorthand
+  // some negative values, careful
+  let max_inf = Math.max.apply(null, inf.map( v => Math.abs(v))); // similar to below, longhand
+  //let max_inf = Math.max.apply(null, inf); // similar to below, longhand
+  let max_dth = Math.max.apply(null, dth.map( v => Math.abs(v))); // similar to above, shorthand
+  //let max_dth = Math.max(...dth); // similar to above, shorthand
   let inf_conv = max_inf/(canvas_height - 2 * padding);
   let dth_conv = max_dth/(canvas_height - 2 * padding);
 
@@ -194,7 +199,12 @@ CPW.get_country_svg = function(cid, country, value_mode) {
   for( let i = 0; i < days_of_data; i=i+1 ) {
 
     let infdth_ttip = document.createElementNS(svgns, 'title');
-    infdth_ttip.appendChild(document.createTextNode("Smoothed: " + inf[i] + " cases, " + dth[i] + " deaths\nReported: " + abinf[i] + " cases, " + abdth[i] + " deaths\nDate: " + dates[i]))
+    if( value_mode === "smth7" ) {
+      infdth_ttip.appendChild(document.createTextNode("Smoothed: " + smthinf[i] + " cases, " + smthdth[i] + " deaths\nReported: " + abinf[i] + " cases, " + abdth[i] + " deaths\nDate: " + dates[i]))
+    } else {
+      infdth_ttip.appendChild(document.createTextNode("Reported: " + abinf[i] + " cases, " + abdth[i] + " deaths\nDate: " + dates[i]))
+
+    }
 
     // infections/cases scale 
     if( inf[i] > 0 ) {
@@ -209,15 +219,22 @@ CPW.get_country_svg = function(cid, country, value_mode) {
       svg.appendChild(inf_bar);
     }
 
-    if( dth[i] > 0 ) {
+    if( dth[i] != 0 ) {
 
       let dth_bar = document.createElementNS(svgns, 'rect');
-      dth_bar.setAttribute("class", "dthbar");
       dth_bar.appendChild(infdth_ttip);
       dth_bar.setAttribute("width", barw - padding);
-      dth_bar.setAttribute("height", dth[i]/dth_conv);
+      // handle negative values
+      if( dth[i] < 0 ) {
+        dth_bar.setAttribute("class", "dthnegbar");
+        dth_bar.setAttribute("height", Math.abs(dth[i])/dth_conv);
+        dth_bar.setAttribute("y", canvas_height - padding - Math.abs(dth[i])/dth_conv);
+      } else {
+        dth_bar.setAttribute("class", "dthbar");
+        dth_bar.setAttribute("height", dth[i]/dth_conv);
+        dth_bar.setAttribute("y", canvas_height - padding - dth[i]/dth_conv);
+      }
       dth_bar.setAttribute("x", padding + (new Date(dates[i]) - x_min) * x_conv);
-      dth_bar.setAttribute("y", canvas_height - padding - dth[i]/dth_conv);
       svg.appendChild(dth_bar);
     }
 

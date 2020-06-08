@@ -25,15 +25,23 @@
       }
       svg {
         --infcol: #5dacee;
+        --infnegcol: #774fa0;
         --dthcol: black;
+        --dthnegcol: #e72f52;
       }
-      svg .infbar {
+      svg .infbar, .infnegbar {
         fill: var(--infcol);
         opacity: 0.6;
       }
-      svg .dthbar {
+      svg .infnegbar {
+        fill: var(--infnegcol);
+      }
+      svg .dthbar, .dthnegbar {
         fill: var(--dthcol);
         opacity: 0.3;
+      }
+      svg .dthnegbar {
+        fill: var(--dthnegcol);
       }
       svg line.inf_scale {
         stroke: var(--infcol);
