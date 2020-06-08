@@ -29,19 +29,25 @@
         --dthcol: black;
         --dthnegcol: #e72f52;
       }
-      svg .infbar, .infnegbar {
+      svg .infbar, svg .infnegbar {
         fill: var(--infcol);
         opacity: 0.6;
       }
       svg .infnegbar {
-        fill: var(--infnegcol);
+        fill-opacity: 0.1;
+        stroke: var(--infcol);
+        stroke-width: 1;
+        stroke-opacity: 1;
       }
-      svg .dthbar, .dthnegbar {
+      svg .dthbar, svg .dthnegbar {
         fill: var(--dthcol);
         opacity: 0.3;
       }
       svg .dthnegbar {
-        fill: var(--dthnegcol);
+        fill-opacity: 0.1;
+        stroke: var(--dthcol);
+        stroke-width: 1;
+        stroke-opacity: 1;
       }
       svg line.inf_scale {
         stroke: var(--infcol);

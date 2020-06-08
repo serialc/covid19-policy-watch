@@ -207,19 +207,26 @@ CPW.get_country_svg = function(cid, country, value_mode) {
     }
 
     // infections/cases scale 
-    if( inf[i] > 0 ) {
+    if( inf[i] !== 0 ) {
 
       let inf_bar = document.createElementNS(svgns, 'rect');
-      inf_bar.setAttribute("class", "infbar");
       inf_bar.appendChild(infdth_ttip.cloneNode(true));
       inf_bar.setAttribute("width", barw - padding);
-      inf_bar.setAttribute("height", inf[i]/inf_conv);
+      // handle negative values
+      if( inf[i] < 0 ) {
+        inf_bar.setAttribute("class", "infnegbar");
+        inf_bar.setAttribute("height", -1 * inf[i]/inf_conv);
+        inf_bar.setAttribute("y", canvas_height - padding - inf[i]/inf_conv * -1);
+      } else {
+        inf_bar.setAttribute("class", "infbar");
+        inf_bar.setAttribute("height", inf[i]/inf_conv);
+        inf_bar.setAttribute("y", canvas_height - padding - inf[i]/inf_conv);
+      }
       inf_bar.setAttribute("x", padding + (new Date(dates[i]) - x_min) * x_conv);
-      inf_bar.setAttribute("y", canvas_height - padding - inf[i]/inf_conv);
       svg.appendChild(inf_bar);
     }
 
-    if( dth[i] != 0 ) {
+    if( dth[i] !== 0 ) {
 
       let dth_bar = document.createElementNS(svgns, 'rect');
       dth_bar.appendChild(infdth_ttip);
@@ -227,8 +234,8 @@ CPW.get_country_svg = function(cid, country, value_mode) {
       // handle negative values
       if( dth[i] < 0 ) {
         dth_bar.setAttribute("class", "dthnegbar");
-        dth_bar.setAttribute("height", Math.abs(dth[i])/dth_conv);
-        dth_bar.setAttribute("y", canvas_height - padding - Math.abs(dth[i])/dth_conv);
+        dth_bar.setAttribute("height", -1 * dth[i]/dth_conv);
+        dth_bar.setAttribute("y", canvas_height - padding - dth[i]/dth_conv * -1);
       } else {
         dth_bar.setAttribute("class", "dthbar");
         dth_bar.setAttribute("height", dth[i]/dth_conv);
