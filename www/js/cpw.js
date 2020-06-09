@@ -60,6 +60,19 @@ CPW.create_infographics = function(mode) {
     let tnode = document.createTextNode(countries[i]);
     heading.setAttribute("id", countries[i]);
     heading.appendChild(tnode);
+
+    let button = document.createElement("button");
+    button.setAttribute("class", "btn btn-light");
+    button.addEventListener("click", function(){CPW.create_infographics('daily')});
+    button.appendChild(document.createTextNode("DR"));
+    heading.appendChild(button);
+
+    let button2 = document.createElement("button");
+    button2.setAttribute("class", "btn btn-light");
+    button2.addEventListener("click", function(){CPW.create_infographics('smth7')});
+    button2.appendChild(document.createTextNode("SM"));
+    heading.appendChild(button2);
+
     main.appendChild(heading);
 
     let p = document.createElement("p");
