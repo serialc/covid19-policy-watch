@@ -26,7 +26,7 @@ CPW.initialize = function() {
   CPW.create_links();
 
   // generate the infographics for all EU countries
-  CPW.create_infographics("smth7");
+  CPW.create_infographics();
 };
 
 CPW.create_links = function() {
@@ -45,7 +45,7 @@ CPW.create_links = function() {
   }
 };
 
-CPW.create_infographics = function(mode) {
+CPW.create_infographics = function() {
   let countries = CPW.countries;
   let main = document.getElementById("main");
   // empty the main element
@@ -61,23 +61,11 @@ CPW.create_infographics = function(mode) {
     heading.setAttribute("id", countries[i]);
     heading.appendChild(tnode);
 
-    let button = document.createElement("button");
-    button.setAttribute("class", "btn btn-light");
-    button.addEventListener("click", function(){CPW.create_infographics('daily')});
-    button.appendChild(document.createTextNode("DR"));
-    heading.appendChild(button);
-
-    let button2 = document.createElement("button");
-    button2.setAttribute("class", "btn btn-light");
-    button2.addEventListener("click", function(){CPW.create_infographics('smth7')});
-    button2.appendChild(document.createTextNode("SM"));
-    heading.appendChild(button2);
-
     main.appendChild(heading);
 
     let p = document.createElement("p");
     // add generated SVG
-    p.appendChild(CPW.get_country_svg(i, countries[i], mode));
+    p.appendChild(CPW.get_country_svg(i, countries[i]));
     main.appendChild(p);
 
     // info box
@@ -88,7 +76,7 @@ CPW.create_infographics = function(mode) {
   }
 };
 
-CPW.get_country_svg = function(cid, country, value_mode) {
+CPW.get_country_svg = function(cid, country) {
   let canvas_width = 1000;
   let canvas_height = 200;
   let policy_height = 200;
@@ -105,13 +93,10 @@ CPW.get_country_svg = function(cid, country, value_mode) {
 
   // get data
   let dates = CPW.data.rates.inf[country].date;
-  let inf = CPW.data.rates.inf[country][value_mode];
-  let dth = CPW.data.rates.dth[country][value_mode];
-
-  let smthinf = CPW.data.rates.inf[country].smth7;
-  let smthdth = CPW.data.rates.dth[country].smth7;
-  let abinf = CPW.data.rates.inf[country].daily;
-  let abdth = CPW.data.rates.dth[country].daily;
+  let inf_day = CPW.data.rates.inf[country]['daily'];
+  let inf_smth = CPW.data.rates.inf[country]['smth7'];
+  let dth_day = CPW.data.rates.dth[country]['daily'];
+  let dth_smth = CPW.data.rates.dth[country]['smth7'];
 
   // calc. conversions
   let x_min = new Date(dates[0]);
@@ -121,10 +106,12 @@ CPW.get_country_svg = function(cid, country, value_mode) {
   let x_conv = (canvas_width - padding - barw) / (x_max - x_min)
 
   // some negative values, careful
-  let max_inf = Math.max.apply(null, inf.map( v => Math.abs(v))); // similar to below, longhand
-  //let max_inf = Math.max.apply(null, inf); // similar to below, longhand
-  let max_dth = Math.max.apply(null, dth.map( v => Math.abs(v))); // similar to above, shorthand
+  let max_inf = Math.max.apply(null, inf_day.map( v => Math.abs(v))); // similar to below, longhand
+  //let max_inf = Math.max.apply(null, inf); // similar to above, shorthand
+  
+  let max_dth = Math.max.apply(null, dth_day.map( v => Math.abs(v))); // similar to below, longhand
   //let max_dth = Math.max(...dth); // similar to above, shorthand
+  
   let inf_conv = max_inf/(canvas_height - 2 * padding);
   let dth_conv = max_dth/(canvas_height - 2 * padding);
 
@@ -209,53 +196,67 @@ CPW.get_country_svg = function(cid, country, value_mode) {
   }
 
   // make data bars of inf and dth, and x-axis vertical grid/date lines
+  // iterates through each day of data
+  let inf_polyline_coords = '';
+  let dth_polyline_coords = '';
   for( let i = 0; i < days_of_data; i=i+1 ) {
 
     let infdth_ttip = document.createElementNS(svgns, 'title');
-    if( value_mode === "smth7" ) {
-      infdth_ttip.appendChild(document.createTextNode("Smoothed: " + smthinf[i] + " cases, " + smthdth[i] + " deaths\nReported: " + abinf[i] + " cases, " + abdth[i] + " deaths\nDate: " + dates[i]))
-    } else {
-      infdth_ttip.appendChild(document.createTextNode("Reported: " + abinf[i] + " cases, " + abdth[i] + " deaths\nDate: " + dates[i]))
+    infdth_ttip.appendChild(document.createTextNode("Reported: " + inf_day[i] + " cases, " + dth_day[i] + " deaths\nDate: " + dates[i]))
 
-    }
-
+    // draw the bar for each day's infections
     // infections/cases scale 
-    if( inf[i] !== 0 ) {
+    if( inf_day[i] !== 0 ) {
 
       let inf_bar = document.createElementNS(svgns, 'rect');
       inf_bar.appendChild(infdth_ttip.cloneNode(true));
       inf_bar.setAttribute("width", barw - padding);
       // handle negative values
-      if( inf[i] < 0 ) {
+      if( inf_day[i] < 0 ) {
         inf_bar.setAttribute("class", "infnegbar");
-        inf_bar.setAttribute("height", -1 * inf[i]/inf_conv);
-        inf_bar.setAttribute("y", canvas_height - padding - inf[i]/inf_conv * -1);
+        inf_bar.setAttribute("height", -1 * inf_day[i]/inf_conv);
+        inf_bar.setAttribute("y", canvas_height - padding - inf_day[i]/inf_conv * -1);
       } else {
         inf_bar.setAttribute("class", "infbar");
-        inf_bar.setAttribute("height", inf[i]/inf_conv);
-        inf_bar.setAttribute("y", canvas_height - padding - inf[i]/inf_conv);
+        inf_bar.setAttribute("height", inf_day[i]/inf_conv);
+        inf_bar.setAttribute("y", canvas_height - padding - inf_day[i]/inf_conv);
       }
       inf_bar.setAttribute("x", padding + (new Date(dates[i]) - x_min) * x_conv);
       svg.appendChild(inf_bar);
     }
 
-    if( dth[i] !== 0 ) {
+    // draw the bar for each day's deaths 
+    if( dth_day[i] !== 0 ) {
 
       let dth_bar = document.createElementNS(svgns, 'rect');
       dth_bar.appendChild(infdth_ttip);
       dth_bar.setAttribute("width", barw - padding);
       // handle negative values
-      if( dth[i] < 0 ) {
+      if( dth_day[i] < 0 ) {
         dth_bar.setAttribute("class", "dthnegbar");
-        dth_bar.setAttribute("height", -1 * dth[i]/dth_conv);
-        dth_bar.setAttribute("y", canvas_height - padding - dth[i]/dth_conv * -1);
+        dth_bar.setAttribute("height", -1 * dth_day[i]/dth_conv);
+        dth_bar.setAttribute("y", canvas_height - padding - dth_day[i]/dth_conv * -1);
       } else {
         dth_bar.setAttribute("class", "dthbar");
-        dth_bar.setAttribute("height", dth[i]/dth_conv);
-        dth_bar.setAttribute("y", canvas_height - padding - dth[i]/dth_conv);
+        dth_bar.setAttribute("height", dth_day[i]/dth_conv);
+        dth_bar.setAttribute("y", canvas_height - padding - dth_day[i]/dth_conv);
       }
       dth_bar.setAttribute("x", padding + (new Date(dates[i]) - x_min) * x_conv);
       svg.appendChild(dth_bar);
+    }
+
+    // draw the line for the smoothed infections
+    if( inf_smth[i] !== "NA" ) {
+      inf_polyline_coords += 
+        (padding + (new Date(dates[i]) - x_min) * x_conv) + ',' +
+        (canvas_height - padding - inf_smth[i]/inf_conv) + ' ';
+    }
+    
+    // draw the line for the smoothed infections
+    if( dth_smth[i] !== "NA" ) {
+      dth_polyline_coords += 
+        (padding + (new Date(dates[i]) - x_min) * x_conv) + ',' +
+        (canvas_height - padding - dth_smth[i]/dth_conv) + ' ';
     }
 
     // make vertical x-axis scale grid lines
@@ -280,6 +281,17 @@ CPW.get_country_svg = function(cid, country, value_mode) {
       svg.appendChild(text);
     }
   }
+
+  // create smoothed lines
+  let inf_line = document.createElementNS(svgns, 'polyline');
+  inf_line.setAttribute("points", inf_polyline_coords);
+  inf_line.setAttribute("class", "smooth_inf");
+  svg.appendChild(inf_line);
+
+  let dth_line = document.createElementNS(svgns, 'polyline');
+  dth_line.setAttribute("points", dth_polyline_coords);
+  dth_line.setAttribute("class", "smooth_dth");
+  svg.appendChild(dth_line);
 
   // add policy bars
   let cpolicies = CPW.data.policies.filter(c => c.fieldData.calc_country === country);

@@ -25,14 +25,16 @@ euinfcon <- lapply(split(euinf, euinf$Country.Region), function(x) {
   y <- colSums(x[,5:ncol(x)])
   dt <- as.Date(x = names(y), format="X%m.%d.%j")
   dy <- c(0, diff(y))
-  data.frame(date=strftime(dt, "%F"), sum=y, daily=dy, smth7=round(filter(dy, filter=rep(1/7, 7), sides=1)), row.names = NULL)[7:(length(dy)-0),]
+  #data.frame(date=strftime(dt, "%F"), sum=y, daily=dy, smth7=round(filter(dy, filter=rep(1/7, 7), sides=1)), row.names = NULL)[7:(length(dy)-0),]
+  data.frame(date=strftime(dt, "%F"), sum=y, daily=dy, smth7=round(filter(dy, filter=rep(1/7, 7), sides=2)), row.names = NULL)
   })
 eudthcon <- lapply(split(eudth, eudth$Country.Region), function(x) {
   #x <- split(eudth, eudth$Country.Region)[[1]]
   y <- colSums(x[,5:ncol(x)])
   dt <- as.Date(x = names(y), format="X%m.%d.%j")
   dy <- c(0, diff(y))
-  data.frame(date=strftime(dt, "%F"), sum=y, daily=dy, smth7=round(filter(dy, filter=rep(1/7, 7), sides=1)), row.names = NULL)[7:(length(dy)-0),]
+  #data.frame(date=strftime(dt, "%F"), sum=y, daily=dy, smth7=round(filter(dy, filter=rep(1/7, 7), sides=1)), row.names = NULL)[7:(length(dy)-0),]
+  data.frame(date=strftime(dt, "%F"), sum=y, daily=dy, smth7=round(filter(dy, filter=rep(1/7, 7), sides=2)), row.names = NULL)
 })
 
 full <- list(inf=euinfcon, dth=eudthcon)

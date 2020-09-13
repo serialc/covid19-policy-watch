@@ -52,6 +52,16 @@
         stroke-width: 1;
         stroke-opacity: 1;
       }
+      svg polyline.smooth_inf {
+        stroke: var(--infcol);
+        stroke-width: 2px;
+        fill: none;
+      }
+      svg polyline.smooth_dth {
+        stroke: var(--dthcol);
+        stroke-width: 2px;
+        fill: none;
+      }
       svg line.inf_scale {
         stroke: var(--infcol);
         opacity: 0.4;
@@ -99,10 +109,6 @@
         <p>These interactive infographics provide a temporal comparison of COVID-19 cases and policies for each country in the UK.</p>
         <p>Policy data is from <a href="https://www.eurofound.europa.eu/data/covid-19-eu-policywatch/database">COVID-19 EU PolicyWatch database</a>, and number of cases from <a href="https://github.com/CSSEGISandData/COVID-19">CSSE, Johns Hopkins University</a></p>
 
-        <p>COVID-19 values: 
-          <button class="btn btn-info" onclick="CPW.create_infographics('daily')">Daily reported (DR)</button>
-          <button class="btn btn-info" onclick="CPW.create_infographics('smth7')">Smoothed (SM)</button>
-        </p>
       </div>
     </div>
     <div class="row">
