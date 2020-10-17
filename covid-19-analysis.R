@@ -19,17 +19,43 @@ eudth <- dth[dth$Country.Region %in% eu_countries,]
 all(sort(unique(euinf$Country.Region)) == eu_countries)
 all(sort(unique(eudth$Country.Region)) == eu_countries)
 
+# add EU total
+euinfplus <- rbind(euinf, c('','EU', 0, 0, colSums(euinf[5:ncol(euinf)])))
+eudthplus <- rbind(eudth, c('','EU', 0, 0, colSums(eudth[5:ncol(eudth)])))
+
 # collapse/sum by country
-euinfcon <- lapply(split(euinf, euinf$Country.Region), function(x) {
-  #x <- split(euinf, euinf$Country.Region)[[1]]
-  y <- colSums(x[,5:ncol(x)])
+compress_plus <- function(data_list) {
+ return(
+   lapply(data_list, function(x) {
+      #x <- split(euinfplus, euinfplus$Country.Region)[[1]]
+      xint <- matrix(sapply(x[,5:ncol(x)], as.integer), nrow = nrow(x))
+      colnames(xint) <- colnames(x[5:ncol(x)])
+      y <- colSums(xint)
+      dt <- as.Date(x = names(y), format="X%m.%d.%j")
+      dy <- c(0, diff(y))
+      #data.frame(date=strftime(dt, "%F"), sum=y, daily=dy, smth7=round(filter(dy, filter=rep(1/7, 7), sides=1)), row.names = NULL)[7:(length(dy)-0),]
+      data.frame(date=strftime(dt, "%F"), sum=y, daily=dy, smth7=round(filter(dy, filter=rep(1/7, 7), sides=2),1), row.names = NULL)
+    })
+  )
+}
+
+euinfcon <- compress_plus(split(euinfplus, euinfplus$Country.Region))
+eudthcon <- compress_plus(split(eudthplus, eudthplus$Country.Region))
+
+euinfcon <- lapply(split(euinfplus, euinfplus$Country.Region), function(x) {
+  #x <- split(euinfplus, euinfplus$Country.Region)[[1]]
+  xint <- matrix(sapply(x[,5:ncol(x)], as.integer), nrow = nrow(x))
+  colnames(xint) <- colnames(x[5:ncol(x)])
+  y <- colSums(xint)
   dt <- as.Date(x = names(y), format="X%m.%d.%j")
   dy <- c(0, diff(y))
   #data.frame(date=strftime(dt, "%F"), sum=y, daily=dy, smth7=round(filter(dy, filter=rep(1/7, 7), sides=1)), row.names = NULL)[7:(length(dy)-0),]
   data.frame(date=strftime(dt, "%F"), sum=y, daily=dy, smth7=round(filter(dy, filter=rep(1/7, 7), sides=2),1), row.names = NULL)
   })
-eudthcon <- lapply(split(eudth, eudth$Country.Region), function(x) {
+eudthcon <- lapply(split(eudthplus, eudth$Country.Region), function(x) {
   #x <- split(eudth, eudth$Country.Region)[[1]]
+  xint <- matrix(sapply(x[,5:ncol(x)], as.integer), nrow = nrow(x))
+  colnames(xint) <- colnames(x[5:ncol(x)])
   y <- colSums(x[,5:ncol(x)])
   dt <- as.Date(x = names(y), format="X%m.%d.%j")
   dy <- c(0, diff(y))

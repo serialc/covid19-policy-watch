@@ -79,14 +79,14 @@ CPW.create_infographics = function() {
 CPW.get_country_svg = function(cid, country) {
   let canvas_width = 1000;
   let canvas_height = 200;
-  let policy_height = 200;
+  let policy_height = country === 'EU' ? 0 : 200;
   let padding = 2;
   let xmargin = 45;
   let ytmargin = 45;
   let ybmargin = padding + policy_height;
   let svgns = "http://www.w3.org/2000/svg";
   let font_size = 16;
-  
+
   // create SVG element
   let svg = document.createElementNS(svgns, 'svg'); 
   svg.setAttribute("viewBox", -xmargin + " " + -ytmargin + " " + (canvas_width + 2 * xmargin) + " " + (canvas_height + ytmargin + ybmargin));
@@ -135,12 +135,14 @@ CPW.get_country_svg = function(cid, country) {
   dth_text.appendChild(document.createTextNode("Deaths"));
   svg.appendChild(dth_text);
 
-  let pol_text = document.createElementNS(svgns, 'text');
-  pol_text.setAttribute("class", "dth_scale");
-  pol_text.setAttribute("text-anchor", "middle");
-  pol_text.setAttribute("transform", "translate(" + -padding + "," + (canvas_height + policy_height/2) + "),rotate(-90)");
-  pol_text.appendChild(document.createTextNode("Policy measures"));
-  svg.appendChild(pol_text);
+  if( country !== 'EU' ) {
+    let pol_text = document.createElementNS(svgns, 'text');
+    pol_text.setAttribute("class", "dth_scale");
+    pol_text.setAttribute("text-anchor", "middle");
+    pol_text.setAttribute("transform", "translate(" + -padding + "," + (canvas_height + policy_height/2) + "),rotate(-90)");
+    pol_text.appendChild(document.createTextNode("Policy measures"));
+    svg.appendChild(pol_text);
+  }
 
   // Add horizontal scale lines
   let inf_lines = 3;
@@ -379,7 +381,10 @@ CPW.get_countries = function() {
   let rec;
 
   // create unique list of countries for which we have data
-  return(Array.from(new Set(data.map(rec => rec.fieldData.calc_country))).sort());
+  let countries = Array.from(new Set(data.map(rec => rec.fieldData.calc_country))).sort();
+  countries.unshift('EU');
+
+  return(countries);
 };
 
 CPW.onload = function() {
@@ -390,13 +395,17 @@ CPW.onload = function() {
   ]).then(([pdata, cdata]) => {
 
     // save to global object
+    // save policy data
     CPW.data.policies = pdata.sort(
+      // sort data according to date
+      // See: https://stackoverflow.com/questions/10123953/how-to-sort-an-array-by-a-date-property
       function(a,b) { 
         return(new Date(a.fieldData.d_startDate) - new Date(b.fieldData.d_startDate));
       }
     );
-    CPW.data.rates = cdata;
 
+    // save covid-19 data
+    CPW.data.rates = cdata;
 
     // start processing data
     CPW.initialize();
