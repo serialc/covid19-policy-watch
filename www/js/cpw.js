@@ -79,13 +79,15 @@ CPW.create_infographics = function() {
 CPW.get_country_svg = function(cid, country) {
   let canvas_width = 1000;
   let canvas_height = 200;
-  let policy_height = country === 'EU' ? 0 : 200;
+  let policy_height = (country === 'European Union') ? 0 : 200;
   let padding = 2;
-  let xmargin = 55;
+  let xmargin = 65;
   let ytmargin = 45;
-  let ybmargin = padding + policy_height;
+  let ybmargin = padding + policy_height + 10;
   let svgns = "http://www.w3.org/2000/svg";
   let font_size = 16;
+  // https://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
+  let thousands = function(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); };
 
   // create SVG element
   let svg = document.createElementNS(svgns, 'svg'); 
@@ -135,7 +137,7 @@ CPW.get_country_svg = function(cid, country) {
   dth_text.appendChild(document.createTextNode("Deaths"));
   svg.appendChild(dth_text);
 
-  if( country !== 'EU' ) {
+  if( country !== 'European Union' ) {
     let pol_text = document.createElementNS(svgns, 'text');
     pol_text.setAttribute("class", "dth_scale");
     pol_text.setAttribute("text-anchor", "middle");
@@ -162,7 +164,7 @@ CPW.get_country_svg = function(cid, country) {
     inf_text.setAttribute("text-anchor", "end");
     inf_text.setAttribute("x", text_line_meet - padding)
     inf_text.setAttribute("y", rndnum/inf_conv + text_y_shift + padding);
-    inf_text.appendChild(document.createTextNode(Math.round(max_inf - rndnum)));
+    inf_text.appendChild(document.createTextNode(thousands(Math.round(max_inf - rndnum))));
     svg.appendChild(inf_text);
 
   }
@@ -192,7 +194,7 @@ CPW.get_country_svg = function(cid, country) {
       text.setAttribute("text-anchor", "start");
       text.setAttribute("x", canvas_width - text_line_meet + padding)
       text.setAttribute("y", rndnum/dth_conv + text_y_shift + padding);
-      text.appendChild(document.createTextNode((max_dth - rndnum)));
+      text.appendChild(document.createTextNode(thousands((max_dth - rndnum))));
       svg.appendChild(text);
     }
   }
@@ -382,7 +384,10 @@ CPW.get_countries = function() {
 
   // create unique list of countries for which we have data
   let countries = Array.from(new Set(data.map(rec => rec.fieldData.calc_country))).sort();
-  countries.unshift('EU');
+  // remove EU from alphabetical
+  countries = countries.filter(function(value, index, arr){ return value !== 'European Union';});
+  // place at front
+  countries.unshift('European Union');
 
   return(countries);
 };
@@ -390,7 +395,7 @@ CPW.get_countries = function() {
 CPW.onload = function() {
 
   Promise.all([
-    fetch(CPW.constants.urls.policies.backup).then(response => response.json()),
+    fetch(CPW.constants.urls.policies.live).then(response => response.json()),
     fetch(CPW.constants.urls.rates.local).then(response => response.json())
   ]).then(([pdata, cdata]) => {
 
