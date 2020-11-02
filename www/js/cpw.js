@@ -206,7 +206,7 @@ CPW.get_country_svg = function(cid, country) {
   for( let i = 0; i < days_of_data; i=i+1 ) {
 
     let infdth_ttip = document.createElementNS(svgns, 'title');
-    infdth_ttip.appendChild(document.createTextNode("Reported: " + inf_day[i] + " cases, " + dth_day[i] + " deaths\nDate: " + dates[i]))
+    infdth_ttip.appendChild(document.createTextNode("Reported:\n" + thousands(inf_day[i]) + " cases\n" + thousands(dth_day[i]) + " deaths\nDate: " + dates[i]))
 
     // draw the bar for each day's infections
     // infections/cases scale 
@@ -214,7 +214,7 @@ CPW.get_country_svg = function(cid, country) {
 
       let inf_bar = document.createElementNS(svgns, 'rect');
       inf_bar.appendChild(infdth_ttip.cloneNode(true));
-      inf_bar.setAttribute("width", barw - padding);
+      inf_bar.setAttribute("width", barw);
       // handle negative values
       if( inf_day[i] < 0 ) {
         inf_bar.setAttribute("class", "infnegbar");
@@ -234,7 +234,7 @@ CPW.get_country_svg = function(cid, country) {
 
       let dth_bar = document.createElementNS(svgns, 'rect');
       dth_bar.appendChild(infdth_ttip);
-      dth_bar.setAttribute("width", barw - padding);
+      dth_bar.setAttribute("width", barw);
       // handle negative values
       if( dth_day[i] < 0 ) {
         dth_bar.setAttribute("class", "dthnegbar");
