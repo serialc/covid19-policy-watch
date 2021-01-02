@@ -31,7 +31,7 @@ compress_plus <- function(data_list) {
       xint <- matrix(sapply(x[,5:ncol(x)], as.integer), nrow = nrow(x))
       colnames(xint) <- colnames(x[5:ncol(x)])
       y <- colSums(xint)
-      dt <- as.Date(x = names(y), format="X%m.%d.%j")
+      dt <- as.Date(x = names(y), format="X%m.%d.%y")
       dy <- c(0, diff(y))
       #data.frame(date=strftime(dt, "%F"), sum=y, daily=dy, smth7=round(filter(dy, filter=rep(1/7, 7), sides=1)), row.names = NULL)[7:(length(dy)-0),]
       data.frame(date=strftime(dt, "%F"), sum=y, daily=dy, smth7=round(filter(dy, filter=rep(1/7, 7), sides=2),1), row.names = NULL)
