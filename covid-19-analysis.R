@@ -3,8 +3,8 @@ library(rjson)
 
 # get data and structure it
 
-inf <- read.table('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv', header = T, sep=',', quote = "\"", stringsAsFactors = F)
-dth <- read.table('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv', header=T, sep=',', quote="\"", stringsAsFactors = F)
+inf <- read.table('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv', header = T, sep=',', quote = "\"", stringsAsFactors = F, fileEncoding = 'utf-8')
+dth <- read.table('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv', header=T, sep=',', quote="\"", stringsAsFactors = F, fileEncoding = 'utf-8')
 #rec <- read.table('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv', header=T, sep=',', quote="\"", stringsAsFactors = F)
 
 eu_countries <- c("Austria", "Belgium", "Bulgaria", "Croatia", "Cyprus", "Czechia", "Denmark", "Estonia", "Finland", "France",
