@@ -1,11 +1,20 @@
 
+# having some weird inconsistent behaviour with read.table to retrieve data, chaning to RCurl fixes the problem
+library(RCurl)
 library(rjson)
 
 # get data and structure it
 
-inf <- read.table('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv', header = T, sep=',', quote = "\"", stringsAsFactors = F)
-dth <- read.table('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv', header=T, sep=',', quote="\"", stringsAsFactors = F)
-#rec <- read.table('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv', header=T, sep=',', quote="\"", stringsAsFactors = F)
+infurl <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
+dthurl <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
+recurl <- "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"
+
+infdata <- getURL(infurl)
+dthdata <- getURL(dthurl)
+
+inf <- read.table(textConnection(infdata), header = T, sep=',', quote = "\"", stringsAsFactors = F)
+dth <- read.table(textConnection(dthdata), header=T, sep=',', quote="\"", stringsAsFactors = F)
+#rec <- read.table(recurl, header=T, sep=',', quote="\"", stringsAsFactors = F)
 
 eu_countries <- c("Austria", "Belgium", "Bulgaria", "Croatia", "Cyprus", "Czechia", "Denmark", "Estonia", "Finland", "France",
                   "Germany", "Greece", "Hungary", "Ireland", "Italy", "Latvia", "Lithuania", "Luxembourg", "Malta", "Netherlands",
