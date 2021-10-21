@@ -276,13 +276,17 @@ CPW.get_country_svg = function(cid, country) {
       vgrid.setAttribute("y2", canvas_height + policy_height - padding);
       svg.appendChild(vgrid);
 
-      let text = document.createElementNS(svgns, 'text');
-      text.setAttribute("class", "dth_scale");
-      text.setAttribute("text-anchor", "middle");
-      text.setAttribute("x", value);
-      text.setAttribute("y", -padding);
-      text.appendChild(document.createTextNode(parseInt(dateparts[1], 10) + "/" + dateparts[0]));
-      svg.appendChild(text);
+      // only show every second month's date label
+      let month = new Date(dates[i]).getMonth();
+      if( month%2 === 0 ) {
+        let text = document.createElementNS(svgns, 'text');
+        text.setAttribute("class", "dth_scale");
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("x", value);
+        text.setAttribute("y", -padding);
+        text.appendChild(document.createTextNode(parseInt(dateparts[1], 10) + "/" + dateparts[0]));
+        svg.appendChild(text);
+      }
     }
   }
 
